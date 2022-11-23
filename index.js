@@ -24,6 +24,8 @@ const dbClient = new MongoClient(uri, {
 async function run() {
   try {
     const categoryCollection = dbClient.db("ipix").collection("categories");
+    const productCollection = dbClient.db("ipix").collection("products");
+    const bookingProductCollection = dbClient.db("ipix").collection("bookings");
 
     /* Category Routes :
         * GET /categories
@@ -58,6 +60,70 @@ async function run() {
       const result = await categoryCollection.deleteOne(query);
       res.send(result);
     });
+
+    /* Products Routes:
+        * GET /products
+        * POST /products
+        
+        * GET /products/:id
+        * DELETE /products/:id
+    */
+
+    app.get("/categories/:cat_id/products", async (req, res) => {
+      const categoryId = req.params.cat_id;
+
+      let query = { category_id: ObjectId(categoryId) };
+      const cursor = productCollection.find(query);
+      const productsData = await cursor.toArray();
+      res.send(productsData);
+    });
+
+    app.post("/categories/:cat_id/products", async (req, res) => {
+      let productData = req.body;
+      productData = {
+        ...productData,
+        seller_id: ObjectId(productData.seller_id),
+        category_id: ObjectId(req.params.cat_id),
+      };
+      const result = await productCollection.insertOne(productData);
+      res.send(result);
+    });
+
+    app.get("/categories/:cat_id/products/:prod_id", async (req, res) => {
+      const query = {
+        _id: ObjectId(req.params.prod_id),
+      };
+      const productData = await productCollection.findOne(query);
+      res.send(productData);
+    });
+
+    app.delete("/categories/:cat_id/products/:prod_id", async (req, res) => {
+      const query = {
+        _id: ObjectId(req.params.prod_id),
+      };
+      const result = await productCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /*
+     * GET /bookings
+     */
+
+    /*app.post(
+      "/categories/:cat_id/products/:prod_id/bookings",
+      async (req, res) => {
+        let bookingProductData = req.body;
+        bookingProductData = {
+          ...bookingProductData,
+          buyer_id: ObjectId(bookingProductData.buyer_id),
+          item_id: ObjectId(bookingProductData.item_id),
+        };
+        const result = await bookingProductCollection.insertOne(
+          bookingProductData
+        );
+        res.send(result);
+      }
+    );*/
   } finally {
   }
 }
