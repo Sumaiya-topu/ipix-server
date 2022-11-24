@@ -109,21 +109,18 @@ async function run() {
      * GET /bookings
      */
 
-    /*app.post(
-      "/categories/:cat_id/products/:prod_id/bookings",
-      async (req, res) => {
-        let bookingProductData = req.body;
-        bookingProductData = {
-          ...bookingProductData,
-          buyer_id: ObjectId(bookingProductData.buyer_id),
-          item_id: ObjectId(bookingProductData.item_id),
-        };
-        const result = await bookingProductCollection.insertOne(
-          bookingProductData
-        );
-        res.send(result);
-      }
-    );*/
+    app.post("/bookings", async (req, res) => {
+      let bookingProductData = req.body;
+      bookingProductData = {
+        ...bookingProductData,
+        buyer_id: ObjectId(bookingProductData.buyer_id),
+        item_id: ObjectId(bookingProductData.item_id),
+      };
+      const result = await bookingProductCollection.insertOne(
+        bookingProductData
+      );
+      res.send(result);
+    });
   } finally {
   }
 }
