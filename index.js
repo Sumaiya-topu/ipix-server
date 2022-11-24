@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 
@@ -26,6 +27,7 @@ async function run() {
     const categoryCollection = dbClient.db("ipix").collection("categories");
     const productCollection = dbClient.db("ipix").collection("products");
     const bookingProductCollection = dbClient.db("ipix").collection("bookings");
+    const usersCollection = dbClient.db("ipix").collection("users");
 
     /* Category Routes :
         * GET /categories
@@ -105,8 +107,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/myproducts", (req, res) => {
+      // TODO: Need to implement after login implementation..
+      res.send({ status: "Under Development" });
+    });
+
     /*
-     * GET /bookings
+     * POST /bookings
      */
 
     app.post("/bookings", async (req, res) => {
@@ -119,6 +126,16 @@ async function run() {
       const result = await bookingProductCollection.insertOne(
         bookingProductData
       );
+      res.send(result);
+    });
+
+    /*
+     * POST /users
+     */
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
       res.send(result);
     });
   } finally {
