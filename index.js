@@ -11,6 +11,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Custom Middleware for JWT
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  console.log(authHeader);
+  if (!authHeader) {
+    return res.send(401).send("Unauthorized access");
+  }
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 app.get("/", (req, res) => {
   res.send({ status: "success" });
 });
@@ -107,7 +125,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myproducts", (req, res) => {
+    app.get("/myproducts", verifyJWT, (req, res) => {
       // TODO: Need to implement after login implementation..
       res.send({ status: "Under Development" });
     });
@@ -137,6 +155,34 @@ async function run() {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(result);
+    });
+
+    // GET /jwt
+
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+
+      if (user) {
+        // Token generate
+        const token = jwt.sign(
+          {
+            email,
+            id: user._id,
+          },
+          process.env.ACCESS_TOKEN,
+          {
+            expiresIn: "1h",
+          }
+        );
+        return res.send({ accessToken: token });
+      }
+
+      console.log(user);
+
+      res.status(403).send({ accessToken: "" });
     });
   } finally {
   }
