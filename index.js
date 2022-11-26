@@ -102,8 +102,10 @@ async function run() {
       let productData = req.body;
       productData = {
         ...productData,
-        seller_id: ObjectId(productData.seller_id),
+        seller_email: productData.seller_email,
         category_id: ObjectId(req.params.cat_id),
+        sold: false,
+        posted_on: new Date(),
       };
       const result = await productCollection.insertOne(productData);
       res.send(result);
@@ -149,7 +151,15 @@ async function run() {
 
     /*
      * POST /users
+     * GET /users
      */
+
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const cursor = usersCollection.find(query);
+      const users = await cursor.toArray();
+      res.send(users);
+    });
 
     app.post("/users", async (req, res) => {
       const user = req.body;
