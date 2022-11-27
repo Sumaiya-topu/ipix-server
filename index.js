@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 require("dotenv").config();
 
@@ -133,15 +134,28 @@ async function run() {
     });
 
     /*
+     * app.get('/bookings')
+     * app.get('/bookings/email=)
      * POST /bookings
+     * app.patch('bookings/:id)
+     * app.delete('/bookings/:id)
      */
+
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.email;
+      const query = { buyers_email: email };
+      const bookingsProductData = await bookingProductCollection
+        .find(query)
+        .toArray();
+      res.send(bookingsProductData);
+    });
 
     app.post("/bookings", async (req, res) => {
       let bookingProductData = req.body;
+
       bookingProductData = {
         ...bookingProductData,
-        buyer_id: ObjectId(bookingProductData.buyer_id),
-        item_id: ObjectId(bookingProductData.item_id),
+        product_id: ObjectId(bookingProductData.product_id),
       };
       const result = await bookingProductCollection.insertOne(
         bookingProductData
